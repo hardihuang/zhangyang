@@ -337,12 +337,18 @@
         let particles = [];
         let floatingTexts = [];
         
+        // 激光冷却
+        let laserCooldown = 0;
+        const LASER_COOLDOWN_TIME = 15; // 发射间隔
+        
         // 键盘控制
         const keys = {};
         document.addEventListener('keydown', (e) => {
             keys[e.key] = true;
-            if (e.key === ' ' && gameRunning && !gamePaused) {
+            // 空格键发射激光
+            if (e.key === ' ' && gameRunning && !gamePaused && player.laser && laserCooldown <= 0) {
                 fireLaser();
+                laserCooldown = LASER_COOLDOWN_TIME;
             }
         });
         document.addEventListener('keyup', (e) => {
@@ -726,6 +732,9 @@
             
             frameCount++;
             
+            // 激光冷却
+            if (laserCooldown > 0) laserCooldown--;
+            
             // 玩家移动
             const currentSpeed = player.speed;
             if (keys['ArrowLeft'] && player.x > player.width/2) {
@@ -733,6 +742,12 @@
             }
             if (keys['ArrowRight'] && player.x < canvas.width - player.width/2) {
                 player.x += currentSpeed;
+            }
+            
+            // 持续按住空格发射激光
+            if (keys[' '] && player.laser && laserCooldown <= 0) {
+                fireLaser();
+                laserCooldown = LASER_COOLDOWN_TIME;
             }
             
             // 更新道具效果
